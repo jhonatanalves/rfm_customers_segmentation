@@ -1,0 +1,8 @@
+
+- varificar o valor de k se vai ser fixo, se o usuário 
+pode escolher, se ao escolher vai ser todas as combinações de valores da tabela de segmentos do curso
+da alura. 
+- se vai dividir os clientes com pontuações especificas, ou usar percentis.
+- se vamos clusterizar com todos os dados ao mesmo tempo e obter um k.
+  - acho melhor essa ideia, e enviar um prompt pro gemini decidir os nomes com nomes de segmentos 
+  pré-definidos.
