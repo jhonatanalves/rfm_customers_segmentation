@@ -30,30 +30,51 @@ for key, default in {
 
 # Sidebar
 with st.sidebar:
-    st.header("📂 Dataset")
-    up = st.file_uploader("Upload CSV", type="csv")
-    sep = st.selectbox("Separador", [",", ";", "\t"], index=0)
-
-    st.header("⚙️ Clusterização (KMeans conjunto)")
-    k_mode = st.radio("Como escolher k?", ["Automático (cotovelo)", "Manual"], index=0)
-
-    k_min, k_max = 2, 10
-    if k_mode == "Manual":
-        n_clusters = st.slider("Clusters (k)", 2, 10, 4)
-    else:
-        st.caption("Automático usa WCSS + knee detection no intervalo 2..10.")
-        n_clusters = None
-
-    random_state = st.number_input("Random state", value=42, step=1)
-
-    st.header("🏢 Contexto do negócio")
-    business_context = st.text_area(
-        "Descreva o negócio/setor (opcional)",
-        placeholder="Ex: E-commerce de moda feminina; ticket médio R$120; foco em recompra.\nEx: SaaS B2B; modelo de assinatura; foco em upgrade e retenção.",
-        height=120,
+    
+    # Carregamento do dataset
+    st.header("📂 Carregar Dataset")
+    up = st.file_uploader(
+    label="",
+    type=["csv"],
+    label_visibility="collapsed"
     )
 
-    st.header("🤖 Gemini (BYOK)")
+    # Configurações de limpeza automática
+    st.sidebar.subheader("🧹 Limpar dados")
+    auto_clean = st.sidebar.toggle("Aplicar limpeza automática", value=True)
+    st.sidebar.caption(
+        "Remove duplicados, trata valores ausentes e padroniza colunas automaticamente."
+    )
+
+    # Configurações de clusterização
+    st.header("⚙️ Segmentar Clientes")
+    k_mode = st.radio("Seleção de k", ["Automático (cotovelo)", "Manual"], index=0)
+
+    k_min, k_max = 2, 12
+    if k_mode == "Manual":
+        n_clusters = st.slider("k", k_min, k_max, min(4, k_max))
+    else:
+        st.caption("Automático: calcula WCSS e aplica detecção do joelho no intervalo.")
+        n_clusters = None
+
+    random_state = st.number_input("Random seed", value=42, step=1)
+    st.caption("Permite a reprodutibilidade dos resultados.")
+
+    # Contexto para LLM
+    st.header("🏢 Descrever negócio")
+    st.caption("Descreva brevemente o negócio para que o LLM gere nomes de segmentos relevantes.") 
+    business_context = st.text_area(
+        placeholder="Ex: E-commerce de moda feminina; ticket médio R$120; foco em recompra.",
+        height=120,
+        label_visibility="collapsed",
+        label=""
+    )
+    
+    st.header("🧠 Selecionar LLM")
+    st.caption("Defina entre Gemini e ChatGPT.") 
+
+    st.header("🗝️ Insirir API Key")
+    st.caption("Insira uma API Key do Gemini.") 
     api_key = st.text_input("Gemini API Key", type="password")
 
     if st.button("Carregar modelos", disabled=not api_key):
@@ -63,7 +84,8 @@ with st.sidebar:
         except Exception as e:
             st.session_state["gemini_models"] = []
             st.error(str(e))
-
+            
+    
     model = None
     if st.session_state["gemini_models"]:
         model = st.selectbox("Modelo", st.session_state["gemini_models"])
@@ -79,7 +101,7 @@ if not up:
     st.info("Faça upload de um CSV para começar.")
     st.stop()
 
-df = pd.read_csv(up, sep=sep)
+df = pd.read_csv(up)
 st.subheader("Prévia do dataset")
 st.dataframe(df.head(20), use_container_width=True)
 
